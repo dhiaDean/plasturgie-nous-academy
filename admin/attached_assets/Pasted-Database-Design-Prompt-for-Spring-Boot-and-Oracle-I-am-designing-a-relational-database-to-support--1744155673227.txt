@@ -1,0 +1,696 @@
+Database Design Prompt for Spring Boot and Oracle
+"I am designing a relational database to support two interconnected platforms: plasturgie-tunisie.com, which focuses on the plasturgy industry in Tunisia (e.g., companies, services, or products), and formations.plasturgie-tunisie.com, which provides training and educational services related to plasturgy (e.g., courses, instructors, learners). The database will be implemented using Oracle and integrated with a Spring Boot application using JPA/Hibernate. It must support payments via Click to Pay (ClicToPay Tunisia, test environment at https://test.clictopay.com/mportal/#login), certifications, events, and JWT-based security. Below are the proposed tables with Oracle-specific data types and Spring Boot JPA considerations, capturing the key entities and relationships. Please provide feedback or refinements as needed."
+
+1. Users Table
+Purpose: Stores user information with JWT security.
+Oracle Columns:
+user_id (NUMBER, Primary Key, Generated via Sequence)
+username (VARCHAR2(50), Unique)
+email (VARCHAR2(100), Unique)
+password_hash (VARCHAR2(255)) -- For bcrypt hash
+first_name (VARCHAR2(50))
+last_name (VARCHAR2(50))
+role (VARCHAR2(20), CHECK (role IN ('learner', 'instructor', 'company_rep', 'admin')))
+jwt_token (VARCHAR2(500), NULL) -- JWT can be long
+token_expiry (TIMESTAMP, NULL)
+created_at (TIMESTAMP DEFAULT CURRENT_TIMESTAMP)
+updated_at (TIMESTAMP DEFAULT CURRENT_TIMESTAMP)
+Spring Boot JPA:
+java
+
+
+
+
+
+
+@Entity
+@Table(name = "users")
+public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_seq")
+    @SequenceGenerator(name = "user_seq", sequenceName = "USER_SEQ", allocationSize = 1)
+    private Long userId;
+
+    @Column(unique = true, nullable = false)
+    private String username;
+
+    @Column(unique = true, nullable = false)
+    private String email;
+
+    @Column(name = "password_hash", nullable = false)
+    private String passwordHash;
+
+    @Column(name = "first_name")
+    private String firstName;
+
+    @Column(name = "last_name")
+    private String lastName;
+
+    @Enumerated(EnumType.STRING)
+    private Role role; // Enum: LEARNER, INSTRUCTOR, COMPANY_REP, ADMIN
+
+    @Column(name = "jwt_token")
+    private String jwtToken;
+
+    @Column(name = "token_expiry")
+    private LocalDateTime tokenExpiry;
+
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+}
+2. Companies Table
+Purpose: Stores plasturgy company details.
+Oracle Columns:
+company_id (NUMBER, Primary Key, Generated via Sequence)
+name (VARCHAR2(100))
+description (CLOB) -- For large text
+address (VARCHAR2(255))
+city (VARCHAR2(50))
+phone (VARCHAR2(20))
+email (VARCHAR2(100))
+website (VARCHAR2(255))
+representative_user_id (NUMBER, Foreign Key REFERENCES Users(user_id))
+created_at (TIMESTAMP DEFAULT CURRENT_TIMESTAMP)
+Spring Boot JPA:
+java
+
+
+
+
+
+
+@Entity
+@Table(name = "companies")
+public class Company {
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "company_seq")
+    @SequenceGenerator(name = "company_seq", sequenceName = "COMPANY_SEQ", allocationSize = 1)
+    private Long companyId;
+
+    @Column(nullable = false)
+    private String name;
+
+    @Column(columnDefinition = "CLOB")
+    private String description;
+
+    private String address;
+    private String city;
+    private String phone;
+    private String email;
+    private String website;
+
+    @ManyToOne
+    @JoinColumn(name = "representative_user_id")
+    private User representative;
+
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+}
+3. Services Table
+Purpose: Stores company services.
+Oracle Columns:
+service_id (NUMBER, Primary Key, Generated via Sequence)
+company_id (NUMBER, Foreign Key REFERENCES Companies(company_id))
+name (VARCHAR2(100))
+description (CLOB)
+category (VARCHAR2(50))
+price_range (VARCHAR2(50))
+created_at (TIMESTAMP DEFAULT CURRENT_TIMESTAMP)
+Spring Boot JPA:
+java
+
+
+
+
+
+
+@Entity
+@Table(name = "services")
+public class Service {
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "service_seq")
+    @SequenceGenerator(name = "service_seq", sequenceName = "SERVICE_SEQ", allocationSize = 1)
+    private Long serviceId;
+
+    @ManyToOne
+    @JoinColumn(name = "company_id")
+    private Company company;
+
+    @Column(nullable = false)
+    private String name;
+
+    @Column(columnDefinition = "CLOB")
+    private String description;
+
+    private String category;
+    private String priceRange;
+
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+}
+4. Courses Table
+Purpose: Stores course details.
+Oracle Columns:
+course_id (NUMBER, Primary Key, Generated via Sequence)
+title (VARCHAR2(100))
+description (CLOB)
+category (VARCHAR2(50))
+duration_hours (NUMBER)
+mode (VARCHAR2(20), CHECK (mode IN ('in-person', 'online', 'hybrid')))
+price (NUMBER(10,2)) -- Decimal for currency
+certification_eligible (NUMBER(1) DEFAULT 0) -- 0 or 1 for boolean
+created_at (TIMESTAMP DEFAULT CURRENT_TIMESTAMP)
+updated_at (TIMESTAMP DEFAULT CURRENT_TIMESTAMP)
+Spring Boot JPA:
+java
+
+
+
+
+
+
+@Entity
+@Table(name = "courses")
+public class Course {
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "course_seq")
+    @SequenceGenerator(name = "course_seq", sequenceName = "COURSE_SEQ", allocationSize = 1)
+    private Long courseId;
+
+    @Column(nullable = false)
+    private String title;
+
+    @Column(columnDefinition = "CLOB")
+    private String description;
+
+    private String category;
+    private Integer durationHours;
+
+    @Enumerated(EnumType.STRING)
+    private Mode mode; // Enum: IN_PERSON, ONLINE, HYBRID
+
+    private BigDecimal price;
+
+    @Column(name = "certification_eligible")
+    private Boolean certificationEligible;
+
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+}
+5. Instructors Table
+Purpose: Stores instructor details.
+Oracle Columns:
+instructor_id (NUMBER, Primary Key, Generated via Sequence)
+user_id (NUMBER, Foreign Key REFERENCES Users(user_id))
+bio (CLOB)
+expertise (VARCHAR2(100))
+rating (NUMBER(2,1)) -- e.g., 4.5
+created_at (TIMESTAMP DEFAULT CURRENT_TIMESTAMP)
+Spring Boot JPA:
+java
+
+
+
+
+
+
+@Entity
+@Table(name = "instructors")
+public class Instructor {
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "instructor_seq")
+    @SequenceGenerator(name = "instructor_seq", sequenceName = "INSTRUCTOR_SEQ", allocationSize = 1)
+    private Long instructorId;
+
+    @OneToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @Column(columnDefinition = "CLOB")
+    private String bio;
+
+    private String expertise;
+    private BigDecimal rating;
+
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+}
+6. Course_Instructors Table (Junction Table)
+Purpose: Links courses to instructors.
+Oracle Columns:
+course_id (NUMBER, Foreign Key REFERENCES Courses(course_id))
+instructor_id (NUMBER, Foreign Key REFERENCES Instructors(instructor_id))
+Composite Primary Key: (course_id, instructor_id)
+Spring Boot JPA:
+Use @ManyToMany in Course and Instructor entities:
+java
+
+
+
+
+
+
+// In Course class
+@ManyToMany
+@JoinTable(name = "course_instructors",
+           joinColumns = @JoinColumn(name = "course_id"),
+           inverseJoinColumns = @JoinColumn(name = "instructor_id"))
+private Set<Instructor> instructors;
+
+// In Instructor class
+@ManyToMany(mappedBy = "instructors")
+private Set<Course> courses;
+7. Enrollments Table
+Purpose: Tracks course enrollments.
+Oracle Columns:
+enrollment_id (NUMBER, Primary Key, Generated via Sequence)
+user_id (NUMBER, Foreign Key REFERENCES Users(user_id))
+course_id (NUMBER, Foreign Key REFERENCES Courses(course_id))
+enrollment_date (TIMESTAMP)
+status (VARCHAR2(20), CHECK (status IN ('pending', 'active', 'completed', 'dropped')))
+payment_id (NUMBER, Foreign Key REFERENCES Payments(payment_id), NULL)
+completion_date (TIMESTAMP, NULL)
+Spring Boot JPA:
+java
+
+
+
+
+
+
+@Entity
+@Table(name = "enrollments")
+public class Enrollment {
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "enrollment_seq")
+    @SequenceGenerator(name = "enrollment_seq", sequenceName = "ENROLLMENT_SEQ", allocationSize = 1)
+    private Long enrollmentId;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "course_id")
+    private Course course;
+
+    @Column(name = "enrollment_date")
+    private LocalDateTime enrollmentDate;
+
+    @Enumerated(EnumType.STRING)
+    private Status status; // Enum: PENDING, ACTIVE, COMPLETED, DROPPED
+
+    @ManyToOne
+    @JoinColumn(name = "payment_id")
+    private Payment payment;
+
+    @Column(name = "completion_date")
+    private LocalDateTime completionDate;
+}
+8. Reviews Table
+Purpose: Stores learner feedback.
+Oracle Columns:
+review_id (NUMBER, Primary Key, Generated via Sequence)
+user_id (NUMBER, Foreign Key REFERENCES Users(user_id))
+course_id (NUMBER, Foreign Key REFERENCES Courses(course_id), NULL)
+instructor_id (NUMBER, Foreign Key REFERENCES Instructors(instructor_id), NULL)
+rating (NUMBER(1))
+comment (CLOB)
+created_at (TIMESTAMP DEFAULT CURRENT_TIMESTAMP)
+Spring Boot JPA:
+java
+
+
+
+
+
+
+@Entity
+@Table(name = "reviews")
+public class Review {
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "review_seq")
+    @SequenceGenerator(name = "review_seq", sequenceName = "REVIEW_SEQ", allocationSize = 1)
+    private Long reviewId;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "course_id")
+    private Course course;
+
+    @ManyToOne
+    @JoinColumn(name = "instructor_id")
+    private Instructor instructor;
+
+    private Integer rating;
+
+    @Column(columnDefinition = "CLOB")
+    private String comment;
+
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+}
+9. Payments Table (ClicToPay Tunisia)
+Purpose: Tracks Click to Pay payments.
+Oracle Columns:
+payment_id (NUMBER, Primary Key, Generated via Sequence)
+user_id (NUMBER, Foreign Key REFERENCES Users(user_id))
+course_id (NUMBER, Foreign Key REFERENCES Courses(course_id), NULL)
+event_id (NUMBER, Foreign Key REFERENCES Events(event_id), NULL)
+amount (NUMBER(10,2))
+currency (VARCHAR2(3) DEFAULT 'TND')
+payment_method (VARCHAR2(20) DEFAULT 'click_to_pay')
+clictopay_token (VARCHAR2(255)) -- Token from ClicToPay
+transaction_reference (VARCHAR2(50), Unique) -- ClicToPay transaction ID
+status (VARCHAR2(20), CHECK (status IN ('pending', 'completed', 'failed', 'refunded')))
+payment_date (TIMESTAMP)
+created_at (TIMESTAMP DEFAULT CURRENT_TIMESTAMP)
+Spring Boot JPA:
+java
+
+
+
+
+
+
+@Entity
+@Table(name = "payments")
+public class Payment {
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "payment_seq")
+    @SequenceGenerator(name = "payment_seq", sequenceName = "PAYMENT_SEQ", allocationSize = 1)
+    private Long paymentId;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "course_id")
+    private Course course;
+
+    @ManyToOne
+    @JoinColumn(name = "event_id")
+    private Event event;
+
+    private BigDecimal amount;
+    private String currency;
+
+    @Column(name = "payment_method")
+    private String paymentMethod = "click_to_pay";
+
+    @Column(name = "clictopay_token")
+    private String clictopayToken;
+
+    @Column(name = "transaction_reference", unique = true)
+    private String transactionReference;
+
+    @Enumerated(EnumType.STRING)
+    private Status status; // Enum: PENDING, COMPLETED, FAILED, REFUNDED
+
+    @Column(name = "payment_date")
+    private LocalDateTime paymentDate;
+
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+}
+10. Certifications Table
+Purpose: Stores certifications.
+Oracle Columns:
+certification_id (NUMBER, Primary Key, Generated via Sequence)
+user_id (NUMBER, Foreign Key REFERENCES Users(user_id))
+course_id (NUMBER, Foreign Key REFERENCES Courses(course_id))
+certificate_code (VARCHAR2(50), Unique)
+issue_date (TIMESTAMP)
+expiry_date (TIMESTAMP, NULL)
+status (VARCHAR2(20), CHECK (status IN ('active', 'expired', 'revoked')))
+created_at (TIMESTAMP DEFAULT CURRENT_TIMESTAMP)
+Spring Boot JPA:
+java
+
+
+
+
+
+
+@Entity
+@Table(name = "certifications")
+public class Certification {
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "certification_seq")
+    @SequenceGenerator(name = "certification_seq", sequenceName = "CERTIFICATION_SEQ", allocationSize = 1)
+    private Long certificationId;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "course_id")
+    private Course course;
+
+    @Column(name = "certificate_code", unique = true)
+    private String certificateCode;
+
+    @Column(name = "issue_date")
+    private LocalDateTime issueDate;
+
+    @Column(name = "expiry_date")
+    private LocalDateTime expiryDate;
+
+    @Enumerated(EnumType.STRING)
+    private Status status; // Enum: ACTIVE, EXPIRED, REVOKED
+
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+}
+11. Events Table
+Purpose: Stores event details.
+Oracle Columns:
+event_id (NUMBER, Primary Key, Generated via Sequence)
+title (VARCHAR2(100))
+description (CLOB)
+event_type (VARCHAR2(20), CHECK (event_type IN ('workshop', 'webinar', 'conference')))
+start_date (TIMESTAMP)
+end_date (TIMESTAMP)
+location (VARCHAR2(255), NULL)
+mode (VARCHAR2(20), CHECK (mode IN ('in-person', 'online', 'hybrid')))
+organizer_id (NUMBER, Foreign Key REFERENCES Users(user_id), NULL)
+company_id (NUMBER, Foreign Key REFERENCES Companies(company_id), NULL)
+price (NUMBER(10,2), NULL)
+created_at (TIMESTAMP DEFAULT CURRENT_TIMESTAMP)
+Spring Boot JPA:
+java
+
+
+
+
+
+
+@Entity
+@Table(name = "events")
+public class Event {
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "event_seq")
+    @SequenceGenerator(name = "event_seq", sequenceName = "EVENT_SEQ", allocationSize = 1)
+    private Long eventId;
+
+    @Column(nullable = false)
+    private String title;
+
+    @Column(columnDefinition = "CLOB")
+    private String description;
+
+    @Enumerated(EnumType.STRING)
+    private EventType eventType; // Enum: WORKSHOP, WEBINAR, CONFERENCE
+
+    @Column(name = "start_date")
+    private LocalDateTime startDate;
+
+    @Column(name = "end_date")
+    private LocalDateTime endDate;
+
+    private String location;
+
+    @Enumerated(EnumType.STRING)
+    private Mode mode; // Enum: IN_PERSON, ONLINE, HYBRID
+
+    @ManyToOne
+    @JoinColumn(name = "organizer_id")
+    private User organizer;
+
+    @ManyToOne
+    @JoinColumn(name = "company_id")
+    private Company company;
+
+    private BigDecimal price;
+
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+}
+12. Event_Registrations Table
+Purpose: Tracks event registrations.
+Oracle Columns:
+registration_id (NUMBER, Primary Key, Generated via Sequence)
+user_id (NUMBER, Foreign Key REFERENCES Users(user_id))
+event_id (NUMBER, Foreign Key REFERENCES Events(event_id))
+registration_date (TIMESTAMP)
+payment_id (NUMBER, Foreign Key REFERENCES Payments(payment_id), NULL)
+status (VARCHAR2(20), CHECK (status IN ('registered', 'attended', 'cancelled')))
+Spring Boot JPA:
+java
+
+
+
+
+
+
+@Entity
+@Table(name = "event_registrations")
+public class EventRegistration {
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "event_reg_seq")
+    @SequenceGenerator(name = "event_reg_seq", sequenceName = "EVENT_REG_SEQ", allocationSize = 1)
+    private Long registrationId;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "event_id")
+    private Event event;
+
+    @Column(name = "registration_date")
+    private LocalDateTime registrationDate;
+
+    @ManyToOne
+    @JoinColumn(name = "payment_id")
+    private Payment payment;
+
+    @Enumerated(EnumType.STRING)
+    private Status status; // Enum: REGISTERED, ATTENDED, CANCELLED
+}
+13. Company_Course_Links Table (Junction Table)
+Purpose: Links companies to courses.
+Oracle Columns:
+company_id (NUMBER, Foreign Key REFERENCES Companies(company_id))
+course_id (NUMBER, Foreign Key REFERENCES Courses(course_id))
+partnership_type (VARCHAR2(50))
+Composite Primary Key: (company_id, course_id)
+Spring Boot JPA:
+Use @ManyToMany in Company and Course:
+java
+
+
+
+
+
+
+// In Company class
+@ManyToMany
+@JoinTable(name = "company_course_links",
+           joinColumns = @JoinColumn(name = "company_id"),
+           inverseJoinColumns = @JoinColumn(name = "course_id"))
+private Set<Course> courses;
+
+// In Course class
+@ManyToMany(mappedBy = "courses")
+private Set<Company> companies;
+Oracle and Spring Boot Notes
+Oracle Sequences:
+Each table uses a sequence (e.g., USER_SEQ, COMPANY_SEQ) for auto-incrementing IDs, mapped via @SequenceGenerator in JPA.
+Create sequences in Oracle:
+sql
+
+
+
+
+
+
+CREATE SEQUENCE USER_SEQ START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE COMPANY_SEQ START WITH 1 INCREMENT BY 1;
+-- Repeat for all tables
+Data Types:
+NUMBER replaces INT for IDs and numeric fields.
+VARCHAR2 is used instead of VARCHAR (Oracle standard).
+CLOB handles large text (e.g., descriptions).
+TIMESTAMP is used for date-time fields, mapped to LocalDateTime in Java.
+Spring Boot Configuration:
+Add Oracle JDBC driver to pom.xml:
+xml
+
+
+
+
+
+
+<dependency>
+    <groupId>com.oracle.database.jdbc</groupId>
+    <artifactId>ojdbc8</artifactId>
+    <version>21.1.0.0</version>
+</dependency>
+Configure application.properties:
+properties
+
+
+
+
+
+
+spring.datasource.url=jdbc:oracle:thin:@localhost:1521:XE
+spring.datasource.username=your_username
+spring.datasource.password=your_password
+spring.datasource.driver-class-name=oracle.jdbc.OracleDriver
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.database-platform=org.hibernate.dialect.Oracle12cDialect
+Click to Pay Integration:
+Use Spring’s RestTemplate or WebClient to interact with https://test.clictopay.com API.
+Store clictopay_token and transaction_reference returned by the API in the Payments table.
+Example service method:
+java
+
+
+
+
+
+
+@Service
+public class PaymentService {
+    @Autowired
+    private RestTemplate restTemplate;
+
+    public Payment initiatePayment(Long userId, Long courseId, BigDecimal amount) {
+        // Call ClicToPay API
+        String url = "https://test.clictopay.com/api/pay";
+        // Add logic to handle response and save to Payments table
+    }
+}
+JWT Security:
+Use Spring Security with JWT:
+xml
+
+
+
+
+
+
+<dependency>
+    <groupId>io.jsonwebtoken</groupId>
+    <artifactId>jjwt</artifactId>
+    <version>0.9.1</version>
+</dependency>
+Generate and validate JWT in a custom filter.
+Notes:
+Enums: Define enums (e.g., Role, Status) in Java to map to Oracle’s VARCHAR2 with CHECK constraints.
+Scalability: Add indexes on frequently queried columns (e.g., Payments.transaction_reference).
+Testing: Use the Oracle test schema and ClicToPay test environment (test.clictopay.com) to validate integration.

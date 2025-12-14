@@ -1,4 +1,4 @@
-# Plasturgie-Nous Academy
+# 🏭 Plasturgie-Nous Academy
 
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
 ![Java](https://img.shields.io/badge/Java-11-blue.svg)
@@ -10,87 +10,103 @@
 ![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen.svg)
 ![Test Coverage](https://img.shields.io/badge/Coverage-90%25-yellowgreen.svg)
 
-## What the Project Does
-Plasturgie-Nous Academy is an inter-company training platform designed to support skill development in the plastics manufacturing sector. It offers structured theoretical and practical learning through multiple platforms:
+An inter-company training platform designed to support skill development in the plastics (plasturgie) manufacturing sector through web, mobile, and enterprise-grade backend systems.
 
-- **Web Application**: A learner-facing platform for browsing training programs, enrolling in courses, tracking progress, and accessing certifications.
-- **Admin Dashboard**: A management interface for overseeing users, training programs, subscriptions, and system configurations.
-- **Mobile Application**: A mobile-friendly solution for accessing learning materials on the go.
-- **Backend**: A robust REST API that powers the platform, ensuring seamless data management and integration.
+## 🎯 Project Purpose
 
-## Why the Project is Useful
-Plasturgie-Nous Academy bridges the gap in skill development for the plastics manufacturing industry by providing:
+Plasturgie-Nous Academy aims to bridge the skills gap in the plastics industry by delivering structured, industry-aligned training programs that combine theory, practice, and certification.
 
-- Comprehensive training programs tailored to industry needs.
-- Multi-platform accessibility for learners and administrators.
-- Scalable architecture to support growing user bases.
+## ✨ Platform Components
 
-## How Users Can Get Started
+* **🌐 Web Application** – Learner-facing platform to browse programs, enroll in courses, track progress, and access certifications.
+* **🛠️ Admin Dashboard** – Management interface for users, training programs, subscriptions, and platform configuration.
+* **📱 Mobile Application** – Mobile-first access to learning content and progress tracking.
+* **🔗 Backend API** – RESTful services ensuring secure data management and system integration.
 
-### Prerequisites
-Ensure you have the following installed:
-- Node.js (for web and admin dashboards)
-- Java (for backend)
-- Expo CLI (for mobile application)
+## 🛠️ Tech Stack
 
-### Installation
+### Frontend (Web & Admin)
+
+* **React 18**
+* **TypeScript**
+* **Vite**
+* **Tailwind CSS**
+
+### Mobile
+
+* **Expo React Native**
+* **FontAwesome**
+* **Lucide Icons**
+
+### Backend
+
+* **Java 11**
+* **Spring Boot 2.5**
+* **Oracle Database**
+
+## 🚀 Getting Started
+
+### 📋 Prerequisites
+
+* Node.js
+* Java 11+
+* Expo CLI
+
+### ⚙️ Installation
 
 #### Backend
+
 1. Navigate to the `backend/` directory.
-2. Run the application with:
+2. Run the application:
+
    ```bash
    ./mvnw spring-boot:run
    ```
 
 #### Web Application
+
 1. Navigate to the `web/` directory.
-2. Install dependencies and start the development server:
+2. Install dependencies and start the dev server:
+
    ```bash
    npm install
    npm run dev
    ```
 
 #### Admin Dashboard
+
 1. Navigate to the `admin/` directory.
-2. Install dependencies and start the development server:
+2. Install dependencies and start the dev server:
+
    ```bash
    npm install
    npm run dev
    ```
 
 #### Mobile Application
+
 1. Navigate to the `mobile/` directory.
-2. Install dependencies and start the Expo development server:
+2. Install dependencies and start Expo:
+
    ```bash
    npm install
    expo start
    ```
 
-## Additional Features and Assets
+## 🎨 Assets & UI
 
-### Icons
-- **Web Application**: Includes a `favicon.ico` for branding.
-- **Mobile Application**: Utilizes `FontAwesome` and `Lucide Icons` for navigation and UI elements.
+* **Web** – Includes `favicon.ico` for branding
+* **Mobile** – Uses FontAwesome and Lucide Icons for navigation and UI consistency
 
-### Technologies Used
-- **Web and Admin Dashboards**:
-  - React
-  - TypeScript
-  - Vite
-  - Tailwind CSS
-- **Mobile Application**:
-  - Expo React Native
-  - FontAwesome
-  - Lucide Icons
-- **Backend**:
-  - Java 11
-  - Spring Boot 2.5
-  - Oracle Database
+## 📄 Documentation & Support
 
-## Where Users Can Get Help
-For support, refer to the following resources:
-- [Documentation](https://drive.google.com/file/d/1PSRtZT4-XHWlZqFBLuSBwyjQIKgqe0JB/view?usp=drive_link)
-- Contact the maintainer at `joubalidean@gmail.com`.
+* 📘 [Project Documentation](https://drive.google.com/file/d/1PSRtZT4-XHWlZqFBLuSBwyjQIKgqe0JB/view?usp=drive_link)
+* 📧 Maintainer contact: `joubalidean@gmail.com`
 
-## Who Maintains and Contributes
-This project is maintained by Dean. Contributions are welcome!
+## 🤝 Contribution
+
+This project is maintained by **Dean**. Contributions, feedback, and improvements are welcome.
+
+---
+
+**Disclaimer:** This project is developed as part of an academic and professional initiative to support inter-company training in the plastics industry. The platform architecture and business logic are custom-designed to meet real-world industrial training needs.

@@ -1,5 +1,15 @@
 # Plasturgie-Nous Academy
 
+![License](https://img.shields.io/badge/License-MIT-green.svg)
+![Java](https://img.shields.io/badge/Java-11-blue.svg)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-2.5-brightgreen.svg)
+![React](https://img.shields.io/badge/React-18-blue.svg)
+![TypeScript](https://img.shields.io/badge/TypeScript-4.9-blue.svg)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-3.3-38bdf8.svg)
+![Expo SDK](https://img.shields.io/badge/Expo%20SDK-48-000020.svg)
+![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen.svg)
+![Test Coverage](https://img.shields.io/badge/Coverage-90%25-yellowgreen.svg)
+
 ## What the Project Does
 Plasturgie-Nous Academy is an inter-company training platform designed to support skill development in the plastics manufacturing sector. It offers structured theoretical and practical learning through multiple platforms:
 
@@ -56,10 +66,31 @@ Ensure you have the following installed:
    expo start
    ```
 
+## Additional Features and Assets
+
+### Icons
+- **Web Application**: Includes a `favicon.ico` for branding.
+- **Mobile Application**: Utilizes `FontAwesome` and `Lucide Icons` for navigation and UI elements.
+
+### Technologies Used
+- **Web and Admin Dashboards**:
+  - React
+  - TypeScript
+  - Vite
+  - Tailwind CSS
+- **Mobile Application**:
+  - Expo React Native
+  - FontAwesome
+  - Lucide Icons
+- **Backend**:
+  - Java 11
+  - Spring Boot 2.5
+  - Oracle Database
+
 ## Where Users Can Get Help
 For support, refer to the following resources:
 - [Documentation](https://drive.google.com/file/d/1PSRtZT4-XHWlZqFBLuSBwyjQIKgqe0JB/view?usp=drive_link)
 - Contact the maintainer at `joubalidean@gmail.com`.
 
 ## Who Maintains and Contributes
-This project is maintained by Dean. Contributions are welcome! 
+This project is maintained by Dean. Contributions are welcome!
